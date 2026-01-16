@@ -1,0 +1,89 @@
+De Consultas Básicas a Análisis Avanzado
+
+Una guía práctica que recorre los pilares de SQL: desde la selección y filtrado de datos hasta el uso de funciones de agregación (GROUP BY, HAVING). 
+Incluye técnicas de manipulación de strings, uniones de múltiples tablas (JOINs, UNION) y el uso de funciones de ventana para análisis de rankings.
+
+•	Fundamentos de Extracción y Filtrado -----------------------------------------------------------------
+
+select *
+from parks_and_recreation.employee_salary;
+
+select gender,age
+from parks_and_recreation.employee_demographics ;
+
+Select gender
+from employee_demographics
+group by gender;
+
+select *
+from employee_demographics
+order by gender, age;
+
+•	Agregaciones y Filtrado de Grupos -----------------------------------------------------------------
+
+select occupation, avg(salary) 
+from employee_salary
+where occupation like "%manager%"
+group by occupation
+having avg(salary) > 75000;
+
+•	Integración de Datos (JOINs y UNIONs) -----------------------------------------------------------------
+
+ Select *
+ from employee_demographics as dem
+ right join employee_salary as sal
+ on dem.employee_id = sal.employee_id;
+ 
+ select dem.employee_id,age,occupation
+ from employee_demographics as dem
+ join employee_salary as sal
+ on dem.employee_id = sal.employee_id;
+  
+ select * 
+ from parks_departments;
+  
+ select *
+ from employee_demographics as dem
+ inner join employee_salary as sal
+ on dem.employee_id = sal. employee_id
+ inner join parks_departments as park
+ on sal.dept_id = park.department_id;
+  
+ select first_name,last_name, "old man" as edad
+ from employee_demographics
+ where age > 40 and gender ="male"
+ union
+ select first_name,last_name, "old lady" as edad
+ from employee_demographics
+ where age > 40 and gender = "female"
+ union 
+ select first_name,last_name, "highly paid employee" as label
+ from employee_salary
+ where salary > 70000  
+ order by first_name, last_name;
+
+•	Manipulación de Strings y Subconsultas -----------------------------------------------------------------
+
+Select first_name, last_name,
+CONCAT (first_name,' ',last_name) as full_name
+from employee_demographics;
+
+select avg(max), avg(min)
+from (select gender,
+ avg(age) as prom,
+ max(age) as max,
+ min(age) as min,
+count(age)
+from employee_demographics
+group by gender) as nueva_tabla;
+
+•	Analítica Comparativa y Rankings de Datos -----------------------------------------------------------------
+
+select dem.employee_id,dem.first_name,dem.last_name, gender, salary,
+row_number() over(partition by gender order by salary desc) as row_num,
+rank() over (partition by gender order by salary desc) as rank_num,
+dense_rank() over (partition by gender order by salary desc) as desrank_num
+from employee_demographics as dem
+join employee_salary as sal
+on dem.employee_id = sal.employee_id
+;
